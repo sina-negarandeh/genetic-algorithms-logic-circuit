@@ -33,6 +33,12 @@ MANIFEST
 *.manifest
 *.spec
 
+# Apple Desktop Services Store
+.DS_Store
+
+# Microsoft Design Gallery Format
+*.mpf
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
