@@ -5,18 +5,76 @@
 
 # ## Introduction
 # 
-# In this project, with the help of genetic algorithms, we want to find the gates needed to produce the desired logic circuit to work according to the given truth table. A genetic algorithm is an optimization or search algorithm that works essentially by mimicking the process of evolution. Genetic Algorithms have the ability to deliver a good-enough solution fast-enough. This makes genetic algorithms attractive for use in solving optimization problems.
+# In this project, with the help of genetic algorithms, the goal is to find the gates needed to produce the desired logic circuit to work according to the given truth table. A genetic algorithm is an optimization or search algorithm that essentially mimics the process of evolution. Genetic Algorithms can deliver a good-enough solution fast enough. This makes genetic algorithms attractive for use in solving optimization problems.
+# 
+# Now to find the required gates, the next steps will be followed.
+# 
+# First step: specifying the concepts of genes and chromosomes in the problem
+# 
+# Second step: generating the initial population
+# 
+# Third step: implementing and specifying fitness criteria
+# 
+# Fourth step: implementing mutation and crossover and generating the next population
 
 # ## Genetic Representation
-# The first step towards a genetic algorithm is to be able to represent candidate solutions genetically.
+# 
+# The first step toward a genetic algorithm is to be able to represent candidate solutions genetically.
 # 
 # ### Chromosomes
-# Each candidate solution could be termed an individual. Each individual is represented by a chromosome, that is a collection of genes. Each set of gates represents one chromosome. The total number of chromosomes constitutes the population.
+# 
+# Each candidate's solution could be termed an individual. A chromosome represents each individual, which is a collection of genes. Each set of gates represents one chromosome. The total number of chromosomes constitutes the population.
 # 
 # ### Gene
-# Genes are variables representing properties of the solution. They could be thought of as decision variables. Each gate inside a set (chromosome) represents one gene.
+# 
+# Genes are variables representing the properties of the solution. They could be thought of as decision variables. Each gate inside a set (chromosome) represents one gene.
 
-# Before anything we import libraries needed in the project.
+# ## Population Initialization
+# 
+# There are two primary methods to initialize a population in a genetic algorithm. They are Random Initialization and Heuristic initialization. Most genetic algorithms are typically initialized with a randomly generated population, i.e., a cluster of individuals. If a heuristic is available, it could be used to create a population around an area where the optimal solution is probable. The size of the population depends on the search space of the problem.
+
+# ## Fitness Function
+# 
+# The fitness function, defined, is a function that takes a candidate solution to the problem as input and produces as output how to fit how good the solution is concerning the problem in consideration. Calculation of fitness value is done repeatedly in a genetic algorithm, and therefore it should be sufficiently fast. Here the fitness function is calculated based on number of rows in the truth table that is satisfied by the logic circuit.
+# 
+# ### Parent Selection
+# 
+# Parent Selection is selecting parents who mate and recombine to create off-springs for the next generation. Parent selection is very crucial to the convergence rate of the genetic algorithm as good parents drive individuals to better and fitter solutions. However, care should be taken to prevent one extremely fit solution from taking over the entire population in a few generations. This leads to the solutions being close to one another in the solution space, thereby losing diversity. Maintaining **good variety** in the population is highly crucial to the success of a genetic algorithm. This taking up of the entire population by one extremely fit solution is known as premature convergence and is an undesirable condition in a genetic algorithm. Several methods can be used for parent selection, such as Fitness Proportionate Selection, Roulette Wheel Selection, Stochastic Universal Sampling, Tournament Selection, and Rank Selection, is used in this project. Accordingly, it will remove problems of FPS by basing selection on relative rather than absolute fitness. And with that, the program can find the result faster, especially when the population is enormous.
+
+# ## Genetic Operators
+# 
+# ### Crossover
+# 
+# The crossover is a technique for producing a child solution from more than one parent. It involves recombining genetic data between the two parents. There are multiple methods to apply crossover. For example, One Point Crossover, Two Point Crossover, and Uniform Crossover. Here the uniform crossover is used. In a uniform crossover,  the chromosome is not divided into segments; instead, each gene is treated separately. This means for every gene, a random number is generated, and if the random number were less than crossover probability, then that gene would be swapped with the next one.
+# 
+# ### Mutation
+# 
+# Usually, most individuals are supposed to be carried forward to the next generation without changes. However, a randomly chosen part of it is changed with a small probability in every generation. Each gene is treated separately. For every gene, a random number is generated. After that, if the random number were less than the mutation probability, then that gate would be replaced with another one randomly.
+# 
+# Despite using these methods, it is still possible that the chromosomes do not change after a few steps. This happens when you get stuck in a local minimum. There are a couple of things that can be done. First, you can use adaptive mutation, and this will help the population to explore more. Furthermore, using other genetic operators might also allow for different situations. For example, the uniform crossover will remove positional bias. In addition, a bigger population would also help. And finally, changing the probability of crossover and mutation might also be helpful.
+
+# ## The Loop and Termination Condition
+# 
+# The key idea is to carry on the process of evolution generation after generation using the reproduction techniques mentioned above. The algorithm could be designed to terminate when one or more of the following occurs:
+# 
+# * A Provably Optimal solution is found
+# * A very high-quality solution is found
+# * The fitness of the individuals no longer improve
+# * A fixed number of generations have reached
+
+# ## Summary
+# 
+# The whole algorithm can be summarized as
+# 
+# 1. Initialize the population
+# 2. Calculate the fitness of population
+# 3. Until termination criteria is not reached repeat:
+#       1. Select parents from the population
+#       2. Crossover and generate a new population
+#       3. Perform mutation on new population
+#       4. Calculate fitness for new population
+
+# Before anything, libraries that are needed in the project will be imported.
 
 # In[1]:
 
@@ -39,7 +97,7 @@ df = pd.read_csv('../data/truth_table.csv')
 df
 
 
-# It should be noted that the set of gates that we deal with in this project is as follows: AND, OR, XOR, NAND, NOR, and XNOR.
+# It should be noted that the set of gates that will be dealt with in this project is as follows: AND, OR, XOR, NAND, NOR, and XNOR.
 
 # In[3]:
 
@@ -115,8 +173,9 @@ class GeneticAlgorithm():
         self.fitness_function = fitness_function
         self.stopping_criteria = stopping_criteria
         self.num_genes_in_chromosome = num_genes_in_chromosome
-        self.p_crossover = 0.75 # between 0.65 and 0.85
-        self.p_mutation = 0.1 # use either high crossover, low mutation (e.g. Xover = 80%, mutation = 5%), or moderate crossover, moderate mutation (e.g. Xover = 40%, mutation = 40%).
+        self.p_crossover = 0.75 # between 0.65 and 0.85 or avg(fitnesses of population)/population size
+        self.p_mutation = 0.1  #use either high crossover, low mutation (e.g. p_crossover = 80%, p_mutation = 5%), 
+                               # or moderate crossover, moderate mutation (e.g. p_crossover = 40%, p_mutation = 40%).
         self.genes = genes
         self.num_generations = 0
         self.best = None
@@ -181,7 +240,9 @@ class GeneticAlgorithm():
             print(f'Generation: {self.num_generations}\t Avg. Fitness Score: {np.average(fitness_scores)}')
 
         self.num_generations += 1
-        self.p_mutation *= 0.99
+        self.p_crossover = np.divide(np.average(fitness_scores), self.population_size)
+        
+#         self.p_mutation *= 0.99 adaptive mutation
         
         return population, fitness_scores
             
@@ -193,33 +254,6 @@ class GeneticAlgorithm():
         
         while not self.is_stopping_criteria_met(fitness_scores, population):
             population, fitness_scores = self.perform_evolution_cycle(population, fitness_scores, log)
-            
-
-# The whole algorithm can be summarized as –  
-
-# 1) Randomly initialize populations p
-# 2) Determine fitness of population
-# 3) Until convergence repeat:
-#       a) Select parents from population
-#       b) Crossover and generate new population
-#       c) Perform mutation on new population
-#       d) Calculate fitness for new population
-
-
-
-# GA()
-#    initialize population
-#    find fitness of population
-   
-#    while (termination criteria is reached) do
-#       parent selection
-#       crossover with probability pc
-#       mutation with probability pm
-#       decode and fitness calculation
-#       survivor selection
-#       find best
-#    return best
-
 
 
 # In[6]:
@@ -242,3 +276,13 @@ ga.begin(True)
 
 logic_circuits.draw_logic_circuits(ga.best)
 
+
+# ## Resources
+# 
+# https://brilliant.org/wiki/genetic-algorithms/
+# 
+# https://www.geeksforgeeks.org/genetic-algorithms/
+# 
+# https://www.tutorialspoint.com/genetic_algorithms/
+# 
+# https://towardsdatascience.com/introduction-to-genetic-algorithms-including-example-code-e396e98d8bf3
